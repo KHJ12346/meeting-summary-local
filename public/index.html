@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>회의록 요약</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="top">
+    <h1>회의록 요약</h1>
+    <nav id="nav">
+      <button data-view="record" class="active">녹음</button>
+      <button data-view="list">회의 목록</button>
+      <button data-view="settings">설정</button>
+    </nav>
+    <span id="modeBadge" class="badge"></span>
+  </header>
+
+  <main>
+    <!-- 녹음 -->
+    <section id="view-record">
+      <div id="recSetup" class="card">
+        <h2>새 회의 녹음</h2>
+        <label>회의명 <input id="recTitle" maxlength="200" placeholder="비워 두면 날짜로 자동 입력"></label>
+        <label>참석자 <input id="recAttendees" maxlength="500" placeholder="예: 김OO, 이OO"></label>
+        <label>메모 <textarea id="recMemo" rows="2" maxlength="5000"></textarea></label>
+        <label>마이크 <select id="recMic"><option value="">기본 마이크</option></select></label>
+        <p id="recInfo" class="hint"></p>
+        <div class="row"><button id="btnStart" class="primary big">녹음 시작</button></div>
+      </div>
+
+      <div id="recLive" class="card" hidden>
+        <h2><span class="dot" id="recDot"></span><span id="recStateText">녹음 중</span></h2>
+        <div id="recTimer" class="timer">00:00:00</div>
+        <div class="meter"><div id="levelBar"></div></div>
+        <p id="recSave" class="hint"></p>
+        <div class="row">
+          <button id="btnPause">일시정지</button>
+          <button id="btnStop" class="danger big">녹음 종료</button>
+        </div>
+      </div>
+      <p id="recMsg" class="msg" hidden></p>
+    </section>
+
+    <!-- 목록 -->
+    <section id="view-list" hidden>
+      <div class="card">
+        <div class="row between">
+          <h2>회의 목록</h2>
+          <input id="searchBox" type="search" placeholder="회의명·참석자·본문 검색">
+        </div>
+        <table id="listTable">
+          <thead><tr><th>일시</th><th>회의명</th><th>길이</th><th>상태</th><th>처리</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <p id="listEmpty" class="hint" hidden>저장된 회의가 없습니다.</p>
+      </div>
+    </section>
+
+    <!-- 상세 -->
+    <section id="view-detail" hidden>
+      <div class="card" id="detailBox"></div>
+    </section>
+
+    <!-- 설정 -->
+    <section id="view-settings" hidden>
+      <div class="card">
+        <h2>설정</h2>
+        <fieldset>
+          <legend>처리 방식</legend>
+          <label>전사(음성→텍스트)
+            <select id="setStt"><option value="local">로컬 (이 노트북)</option><option value="groq">Groq (외부 전송)</option></select>
+          </label>
+          <label>요약
+            <select id="setSummary"><option value="local">로컬 (이 노트북)</option><option value="groq">Groq (외부 전송)</option></select>
+          </label>
+          <p class="hint warn" id="groqWarn" hidden>Groq를 선택하면 녹음 음성(전사) 또는 전사문(요약)이 외부 서버로 전송됩니다. 사내 보안 지침 승인 범위 안에서만 사용하세요. 전송 전에 매번 동의를 확인합니다.</p>
+          <p class="hint" id="groqKeyState"></p>
+        </fieldset>
+        <fieldset>
+          <legend>Groq</legend>
+          <label>전사 모델 <input id="setGroqStt"></label>
+          <label>요약 모델 <input id="setGroqSummary"></label>
+        </fieldset>
+        <fieldset>
+          <legend>로컬 (오프라인)</legend>
+          <label>Ollama 주소 <input id="setOllamaUrl"></label>
+          <label>Ollama 모델 <input id="setOllamaModel"></label>
+          <label>ffmpeg 경로 <input id="setFfmpeg"></label>
+          <label>whisper-cli 경로 <input id="setWhisperCli" placeholder="whisper.cpp의 whisper-cli.exe"></label>
+          <label>whisper 모델(.bin) 경로 <input id="setWhisperModel"></label>
+        </fieldset>
+        <fieldset>
+          <legend>녹음</legend>
+          <label>녹음 구간 길이(분) <input id="setSegMin" type="number" min="1" max="30"></label>
+          <p class="hint">긴 회의를 이 길이로 나누어 저장합니다. 중간에 문제가 생겨도 나눠진 구간까지는 보존됩니다.</p>
+        </fieldset>
+        <p class="hint" id="dataDirInfo"></p>
+        <div class="row"><button id="btnSaveSettings" class="primary">저장</button></div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="consentDialog">
+    <form method="dialog">
+      <h3>회의 내용이 외부로 전송됩니다</h3>
+      <p>다음 단계가 <strong>Groq 서버</strong>로 데이터를 보냅니다: <strong id="consentList"></strong></p>
+      <p class="hint">전사는 녹음 음성을, 요약은 전사문 텍스트를 전송합니다. 사내 보안 지침에서 허용한 회의만 진행하세요.</p>
+      <div class="row">
+        <button value="cancel">전송하지 않음</button>
+        <button value="ok" class="primary">동의하고 전송</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" hidden></div>
+  <script src="/app.js"></script>
+</body>
+</html>

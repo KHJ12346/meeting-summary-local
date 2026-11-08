@@ -1,0 +1,12 @@
+{
+  "name": "meeting-summary-local",
+  "version": "0.1.0",
+  "private": true,
+  "description": "로컬호스트 웹페이지에서 녹음하고 전사·요약을 노트북에 보관하는 회의록 요약 서비스",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test/"
+  }
+}
